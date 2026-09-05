@@ -1,0 +1,34 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.User.Contracts";
+package CecoChat.User.Contracts;
+import "ProfilePublic.proto";
+
+service ProfileQuery {
+  rpc GetPublicProfile(GetPublicProfileRequest) returns (GetPublicProfileResponse);
+  rpc GetPublicProfilesByIdList(GetPublicProfilesByIdListRequest) returns (GetPublicProfilesByIdListResponse);
+  rpc GetPublicProfilesByPattern(GetPublicProfilesByPatternRequest) returns (GetPublicProfilesByPatternResponse);
+}
+
+message GetPublicProfileRequest {
+  int64 user_id = 1;
+}
+
+message GetPublicProfileResponse {
+  ProfilePublic profile = 1;
+}
+
+message GetPublicProfilesByIdListRequest {
+  repeated int64 user_ids = 1;
+}
+
+message GetPublicProfilesByIdListResponse {
+  repeated ProfilePublic profiles = 1;
+}
+
+message GetPublicProfilesByPatternRequest {
+  string search_pattern = 1;
+}
+
+message GetPublicProfilesByPatternResponse {
+  repeated ProfilePublic profiles = 1;
+}

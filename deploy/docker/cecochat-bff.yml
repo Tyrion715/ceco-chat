@@ -1,0 +1,100 @@
+version: '3'
+networks:
+  cecochat:
+services:
+  cecochat-bff:
+    image: ceco.com/cecochat/bff:0.1
+    container_name: cecochat-bff
+    hostname: bff
+    networks: &networks
+      - cecochat
+    ports:
+      - "31003:443"
+    healthcheck: &healthcheck
+      test: "curl --fail https://localhost/healthz || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: https://+
+      ASPNETCORE_HTTPS_PORT: 443
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/services.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "cecochat"
+      CECOCHAT_ConfigClient__Address: "https://config"
+      CECOCHAT_Backplane__Kafka__BootstrapServers__0: kafka0:19091
+      CECOCHAT_Backplane__Kafka__BootstrapServers__1: kafka1:19092
+      CECOCHAT_UserClient__Address: "https://user"
+      CECOCHAT_ChatsClient__Address: "https://chats"
+      CECOCHAT_FileStorage__Endpoint: "http://minio0:9000"
+      CECOCHAT_Telemetry__Tracing__Sampling__Strategy: Probability
+      CECOCHAT_Telemetry__Tracing__Sampling__Probability: 0.1
+      CECOCHAT_Telemetry__Tracing__Export__TargetHost: otel-collector
+      CECOCHAT_Telemetry__Tracing__Export__TargetPort: 4317
+      CECOCHAT_Telemetry__Logging__Export__TargetHost: otel-collector
+      CECOCHAT_Telemetry__Logging__Export__TargetPort: 4317
+  cecochat-chats:
+    image: ceco.com/cecochat/chats:0.1
+    container_name: cecochat-chats
+    hostname: chats
+    networks: *networks
+    ports:
+      - "31004:443"
+    healthcheck: *healthcheck
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: https://+
+      ASPNETCORE_HTTPS_PORT: 443
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/services.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "cecochat"
+      CECOCHAT_ConfigClient__Address: "https://config"
+      CECOCHAT_Backplane__Kafka__BootstrapServers__0: kafka0:19091
+      CECOCHAT_Backplane__Kafka__BootstrapServers__1: kafka1:19092
+      CECOCHAT_ChatsDb__Cluster__ContactPoints__0: cassandra0:9042
+      CECOCHAT_ChatsDb__Cluster__ContactPoints__1: cassandra1:9042
+      CECOCHAT_ChatsDb__Cluster__LocalDc: Europe
+      CECOCHAT_ChatsDb__Cluster__SocketConnectTimeout: 00:00:05.0
+      CECOCHAT_ChatsDb__Cluster__ExponentialReconnectPolicy: true
+      CECOCHAT_ChatsDb__Cluster__ExponentialReconnectPolicyBaseDelay: 00:00:00.100
+      CECOCHAT_ChatsDb__Cluster__ExponentialReconnectPolicyMaxDelay: 00:00:05.0
+      CECOCHAT_Telemetry__Tracing__Sampling__Strategy: Probability
+      CECOCHAT_Telemetry__Tracing__Sampling__Probability: 0.1
+      CECOCHAT_Telemetry__Tracing__Export__TargetHost: otel-collector
+      CECOCHAT_Telemetry__Tracing__Export__TargetPort: 4317
+      CECOCHAT_Telemetry__Logging__Export__TargetHost: otel-collector
+      CECOCHAT_Telemetry__Logging__Export__TargetPort: 4317
+  cecochat-user:
+    image: ceco.com/cecochat/user:0.1
+    container_name: cecochat-user
+    hostname: user
+    networks: *networks
+    ports:
+      - "31005:443"
+    healthcheck: *healthcheck
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: https://+
+      ASPNETCORE_HTTPS_PORT: 443
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/services.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "cecochat"
+      CECOCHAT_ConfigClient__Address: "https://config"
+      CECOCHAT_Backplane__Kafka__BootstrapServers__0: kafka0:19091
+      CECOCHAT_Backplane__Kafka__BootstrapServers__1: kafka1:19092
+      CECOCHAT_UserDb__Init__ConnectionString: "Host=yb-tserver0,yb-tserver1;Port=5433;Database=postgres;Username=yugabyte;Password=yugabyte;"
+      CECOCHAT_UserDb__Connect__ConnectionString: "Host=yb-tserver0,yb-tserver1;Port=5433;Database=users;Username=cecochat_dev;Password=secret;Keepalive=30;Load Balance Hosts=true;"
+      CECOCHAT_UserCache__Enabled: "true"
+      CECOCHAT_UserCache__ProfileEntryDuration: "00:00:30.0"
+      CECOCHAT_UserCache__ProfileSearchDuration: "00:00:30.0"
+      CECOCHAT_UserCache__ConnectionEntriesDuration: "00:00:30.0"
+      CECOCHAT_UserCache__Store__Endpoints__0: redis0:6379
+      CECOCHAT_UserCache__Store__Endpoints__1: redis1:6379
+      CECOCHAT_UserCache__Store__Endpoints__2: redis2:6379
+      CECOCHAT_UserCache__Store__ConnectRetry: 16
+      CECOCHAT_UserCache__Store__ConnectTimeout: 5000
+      CECOCHAT_UserCache__Store__KeepAlive: 2
+      CECOCHAT_Telemetry__Tracing__Sampling__Strategy: Probability
+      CECOCHAT_Telemetry__Tracing__Sampling__Probability: 0.1
+      CECOCHAT_Telemetry__Tracing__Export__TargetHost: otel-collector
+      CECOCHAT_Telemetry__Tracing__Export__TargetPort: 4317
+      CECOCHAT_Telemetry__Logging__Export__TargetHost: otel-collector
+      CECOCHAT_Telemetry__Logging__Export__TargetPort: 4317

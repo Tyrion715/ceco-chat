@@ -1,0 +1,33 @@
+Master:
+  StatefulSet:
+    Replicas: 2
+  Image:
+    Name: yugabytedb/yugabyte
+    Tag: 2.20.0.0-b76
+    PullPolicy: IfNotPresent
+  Networking:
+    UiPort: 7000
+    RpcPort: 7100
+    WebServerInterface: 0.0.0.0
+  Data:
+    MasterReplicationFactor: 2
+    ReplicationFactor: 2
+  Resources:
+    Requests:
+      Storage: 1Gi
+TServer:
+  StatefulSet:
+    Replicas: 2
+  Image:
+    Name: yugabytedb/yugabyte
+    Tag: 2.20.0.0-b76
+    PullPolicy: IfNotPresent
+  Networking:
+    SqlPort: 5433
+    UiPort: 9000
+    RpcPort: 9100
+    PgsqlProxyBindAddress: 0.0.0.0
+    WebServerInterface: 0.0.0.0
+  Resources:
+    Requests:
+      Storage: 1Gi

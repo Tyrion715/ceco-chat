@@ -1,0 +1,27 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.User.Contracts";
+package CecoChat.User.Contracts;
+import "google/protobuf/timestamp.proto";
+import "FileRef.proto";
+
+service FileQuery {
+  rpc GetUserFiles(GetUserFilesRequest) returns (GetUserFilesResponse);
+  rpc HasUserFileAccess(HasUserFileAccessRequest) returns (HasUserFileAccessResponse);
+}
+
+message GetUserFilesRequest {
+  google.protobuf.Timestamp newer_than = 1;
+}
+
+message GetUserFilesResponse {
+  repeated FileRef files = 1;
+}
+
+message HasUserFileAccessRequest {
+  string bucket = 1;
+  string path = 2;
+}
+
+message HasUserFileAccessResponse {
+  bool hasAccess = 1;
+}

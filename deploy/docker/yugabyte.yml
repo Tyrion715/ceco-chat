@@ -1,0 +1,87 @@
+version: '3'
+networks:
+  cecochat:
+services:
+  yb-master:
+    image: yugabytedb/yugabyte:2.20.0.0-b76
+    container_name: cecochat-yb-master
+    hostname: yb-master
+    networks: &networks
+      - cecochat
+    ports:
+      - "7000:7000"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      GET_HOSTS_FROM: dns
+    volumes:
+      - cecochat-yb-master:/mnt/master
+    command:
+      [ "/home/yugabyte/bin/yb-master",
+        "--fs_data_dirs=/mnt/master",
+        "--rpc_bind_addresses=yb-master:7100",
+        "--server_broadcast_addresses=yb-master:7100",
+        "--master_addresses=yb-master:7100",
+        "--master_replication_factor=1",
+        "--replication_factor=2",
+        "--logtostderr" ]
+  yb-tserver0:
+    image: yugabytedb/yugabyte:2.20.0.0-b76
+    container_name: cecochat-yb-tserver0
+    hostname: yb-tserver0
+    networks: *networks
+    ports:
+      - "5433:5433"
+      - "9000:9000"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    environment: &tserver-env
+      GET_HOSTS_FROM: dns
+    volumes:
+      - cecochat-yb-tserver0:/mnt/tserver
+    command:
+      [ "/home/yugabyte/bin/yb-tserver",
+        "--fs_data_dirs=/mnt/tserver",
+        "--rpc_bind_addresses=yb-tserver0:9100",
+        "--server_broadcast_addresses=yb-tserver0:9100",
+        "--tserver_master_addrs=yb-master:7100",
+        "--start_pgsql_proxy",
+        "--logtostderr" ]
+    depends_on:
+      - yb-master
+  yb-tserver1:
+    image: yugabytedb/yugabyte:2.20.0.0-b76
+    container_name: cecochat-yb-tserver1
+    hostname: yb-tserver1
+    networks: *networks
+    ports:
+      - "5434:5433"
+      - "9001:9000"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    environment: *tserver-env
+    volumes:
+      - cecochat-yb-tserver1:/mnt/tserver
+    command:
+      [ "/home/yugabyte/bin/yb-tserver",
+        "--fs_data_dirs=/mnt/tserver",
+        "--rpc_bind_addresses=yb-tserver1:9100",
+        "--server_broadcast_addresses=yb-tserver1:9100",
+        "--tserver_master_addrs=yb-master:7100",
+        "--start_pgsql_proxy",
+        "--logtostderr" ]
+    depends_on:
+      - yb-master
+volumes:
+  cecochat-yb-master:
+    external: true
+  cecochat-yb-tserver0:
+    external: true
+  cecochat-yb-tserver1:
+    external: true

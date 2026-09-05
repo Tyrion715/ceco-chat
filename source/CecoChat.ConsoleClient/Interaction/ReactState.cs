@@ -1,0 +1,46 @@
+using CecoChat.ConsoleClient.LocalStorage;
+
+namespace CecoChat.ConsoleClient.Interaction;
+
+public sealed class ReactState : State
+{
+    public ReactState(StateContainer states) : base(states)
+    { }
+
+    public override async Task<State> Execute()
+    {
+        Console.Write("Choose message ID (ENTER to exit): ");
+        string? messageIdString = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(messageIdString) || !long.TryParse(messageIdString, out long messageId))
+        {
+            Context.ReloadData = false;
+            return States.OneChat;
+        }
+        if (!MessageStorage.TryGetMessage(Client.UserId, Context.UserId, messageId, out Message? message))
+        {
+            Context.ReloadData = false;
+            return States.OneChat;
+        }
+
+        if (message.Reactions.ContainsKey(Client.UserId))
+        {
+            await MessagingClient.UnReact(messageId, message.SenderId, message.ReceiverId);
+            message.Reactions.Remove(Client.UserId);
+        }
+        else
+        {
+            string reaction = Reactions.ThumbsUp;
+            await MessagingClient.React(messageId, message.SenderId, message.ReceiverId, reaction);
+            message.Reactions.Add(Client.UserId, reaction);
+        }
+
+        Context.ReloadData = false;
+        return States.OneChat;
+    }
+
+    private static class Reactions
+    {
+        public static readonly string ThumbsUp = "\\u1F44D";
+    }
+}

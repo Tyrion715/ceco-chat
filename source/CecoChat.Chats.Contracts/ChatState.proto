@@ -1,0 +1,11 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.Chats.Contracts";
+package CecoChat.Chats.Contracts;
+
+message ChatState {
+  string chat_id = 1;
+  int64 other_user_id = 2;
+  int64 newest_message = 3;
+  int64 other_user_delivered = 4;
+  int64 other_user_seen = 5;
+}

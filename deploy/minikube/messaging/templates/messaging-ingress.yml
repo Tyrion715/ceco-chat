@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{.Release.Name}}
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: {{.Release.Name}}
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "{{.Values.Ingress.ReadTimeout}}"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "{{.Values.Ingress.SendTimeout}}"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - {{.Values.Ingress.Host}}
+      secretName: {{.Values.Ingress.SecretName}}
+  rules:
+    - host: {{.Values.Ingress.Host}}
+      http:
+        paths:
+          - path: /m0(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{.Release.Name}}-0
+                port:
+                  number: {{.Values.Networking.Port}}
+          - path: /m1(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{.Release.Name}}-1
+                port:
+                  number: {{.Values.Networking.Port}}

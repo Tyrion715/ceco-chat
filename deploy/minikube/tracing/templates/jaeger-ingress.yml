@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{.Release.Name}}-jaeger
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: {{.Release.Name}}-jaeger
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - {{.Values.Ingress.Host}}
+      secretName: {{.Values.Ingress.SecretName}}
+  rules:
+    - host: {{.Values.Ingress.Host}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{.Release.Name}}-jaeger
+                port:
+                  number: {{.Values.Networking.Jaeger.AccessPort}}

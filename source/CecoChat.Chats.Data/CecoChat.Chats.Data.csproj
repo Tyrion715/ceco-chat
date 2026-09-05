@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\chats-chat-messages-table.cql" />
+    <EmbeddedResource Include="Scripts\chats-file-data-type.cql" />
+    <EmbeddedResource Include="Scripts\chats-keyspace.cql" />
+    <EmbeddedResource Include="Scripts\chats-user-chats-table.cql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CecoChat.Chats.Contracts\CecoChat.Chats.Contracts.csproj" />
+    <ProjectReference Include="..\CecoChat.Data\CecoChat.Data.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Common.Cassandra\Common.Cassandra.csproj" />
+  </ItemGroup>
+
+</Project>

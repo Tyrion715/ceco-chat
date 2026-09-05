@@ -1,0 +1,43 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.Backplane.Contracts";
+package CecoChat.Backplane.Contracts;
+import "google/protobuf/timestamp.proto";
+import "Contracts/MessageType.proto";
+import "Contracts/DeliveryStatus.proto";
+import "Contracts/ConnectionStatus.proto";
+
+message BackplaneMessage {
+  int64 message_id = 1;
+  int64 sender_id = 2;
+  int64 receiver_id = 3;
+  string initiator_connection = 4;
+  int64 target_user_id = 5;
+  MessageType type = 6;
+  oneof message_data {
+    DeliveryStatus status = 7;
+    BackplanePlainText plain_text = 8;
+    BackplaneFile file = 9;
+    BackplaneReaction reaction = 10;
+    BackplaneConnection connection = 11;
+  }
+}
+
+message BackplanePlainText {
+  string text = 1;
+}
+
+message BackplaneFile {
+  string text = 1;
+  string bucket = 2;
+  string path = 3;
+}
+
+message BackplaneReaction {
+  int64 reactor_id = 1;
+  string reaction = 2;
+}
+
+message BackplaneConnection {
+  ConnectionStatus status = 1;
+  google.protobuf.Timestamp version = 2;
+}

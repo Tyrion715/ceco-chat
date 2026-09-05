@@ -1,0 +1,171 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev]
+
+jobs:
+  verify-code-style:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Install dotnet-format
+      run: dotnet tool update -g dotnet-format
+
+    - name: Lint
+      run: dotnet format source/CecoChat.sln --no-restore --verify-no-changes --verbosity detailed
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Generate certificate
+      working-directory: source/certificates
+      run: |
+        openssl version
+        bash create-certificate.sh
+
+    - name: Restore
+      run: |
+        dotnet restore source/CecoChat.sln
+        dotnet restore source/Check.sln
+
+    - name: Build
+      run: |
+        dotnet build --no-restore source/CecoChat.sln
+        dotnet build --no-restore source/Check.sln
+
+    - name: Upload certificates needed for running the tests and code analysis
+      uses: actions/upload-artifact@v4
+      with:
+        name: service-certificates
+        path: source/certificates/services.*
+
+  test:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+      
+    - name: Download certificate needed for testing
+      uses: actions/download-artifact@v4
+      with:
+        name: service-certificates
+        path: source/certificates
+
+    - name: Restore
+      run: |
+        dotnet restore source/CecoChat.sln
+
+    - name: Run tests
+      # The service self-signed TLS certificate needs to be trusted so that the client can call the service successfully
+      #
+      # By default Coverlet creates a code coverage file for each test project in a project-specific dir
+      # Merging all project-specific code coverage files is done using the approach described here: https://github.com/coverlet-coverage/coverlet/issues/357
+      # '/maxcpucount:1' is mandatory
+      # The comma ',' is escaped with '%2c' when converting the JSON output to OpenCover XML
+      run: |
+        sudo mv source/certificates/services.crt /usr/local/share/ca-certificates/services.crt
+        sudo chmod 644 /usr/local/share/ca-certificates/services.crt
+        sudo update-ca-certificates
+        export CECOCHAT_START_TEST_CONTAINERS_CHATS_DB=true
+        dotnet test source/CecoChat.sln --no-restore --logger "console;verbosity=detailed" /p:CollectCoverage=true /p:CoverletOutput="${GITHUB_WORKSPACE}/source/" /p:MergeWith="${GITHUB_WORKSPACE}/source/coverage.json" /p:CoverletOutputFormat="json%2copencover" /maxcpucount:1
+
+    - name: Upload test logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-logs
+        path: source/logs
+
+    - name: Upload code coverage file
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-coverage
+        path: source/coverage.opencover.xml
+
+  analyze-code-quality:
+    needs: [verify-code-style, build, test]
+    runs-on: windows-latest
+    steps:
+
+      - name: JDK 11 setup
+        uses: actions/setup-java@v4
+        with:
+          distribution: oracle
+          java-version: 17
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: .\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path .\.sonar\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+
+      - name: Download certificate needed for code analysis
+        uses: actions/download-artifact@v4
+        with:
+          name: service-certificates
+          path: source/certificates
+
+      - name: Download code coverage file
+        uses: actions/download-artifact@v4
+        with:
+          name: code-coverage
+          path: source
+
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"evangelosvlachos96-dotcom_CecoChat" /o:"evangelosvlachos96-dotcom" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="${GITHUB_WORKSPACE}/source/coverage.opencover.xml"
+          dotnet build source/CecoChat.sln
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"

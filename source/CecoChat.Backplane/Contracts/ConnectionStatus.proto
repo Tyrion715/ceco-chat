@@ -1,0 +1,9 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.Backplane.Contracts";
+package CecoChat.Backplane.Contracts;
+
+enum ConnectionStatus {
+  NOT_CONNECTED = 0;
+  PENDING = 1;
+  CONNECTED = 2;
+}

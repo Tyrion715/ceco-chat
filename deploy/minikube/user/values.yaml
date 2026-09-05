@@ -1,0 +1,30 @@
+Deployment:
+  Replicas: 2
+Image:
+  Name: ceco.com/cecochat/user
+  Tag: 0.1
+  PullPolicy: IfNotPresent
+Networking:
+  Port: 443
+  IdGenService: idgen
+  UserDb:
+    Host: yb-tserver
+    Service: yb-tserver
+    Port: 5433
+    Root:
+      User: yugabyte
+      Pass: yugabyte
+    Normal:
+      User: cecochat_dev
+      Pass: secret
+  UserCache:
+    Enabled: true
+    Store:
+      Endpoint0: redis-0.redis.cecochat.svc.cluster.local:6379
+      Endpoint1: redis-1.redis.cecochat.svc.cluster.local:6379
+      Endpoint2: redis-2.redis.cecochat.svc.cluster.local:6379
+      ConnectRetry: 16
+      ConnectTimeout: 5000
+      KeepAlive: 2
+Probes:
+  Scheme: HTTPS

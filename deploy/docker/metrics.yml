@@ -1,0 +1,54 @@
+version: '3'
+networks:
+  cecochat:
+services:
+  prometheus:
+    image: prom/prometheus:v2.39.1
+    container_name: cecochat-prometheus
+    hostname: prometheus
+    networks: &networks
+      - cecochat
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: --config.file=/etc/prometheus/prometheus.yml --log.level=debug
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.46.0
+    container_name: cecochat-cadvisor
+    hostname: cadvisor
+    networks: *networks
+    ports:
+      - "8081:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk:/dev/disk/:ro
+    privileged: true
+  grafana:
+    image: grafana/grafana:9.2.4
+    container_name: cecochat-grafana
+    hostname: grafana
+    networks: *networks
+    ports:
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: pass
+    depends_on:
+      - prometheus

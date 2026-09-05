@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{.Release.Name}}
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: {{.Release.Name}}
+spec:
+  selector:
+    matchLabels:
+      app: {{.Release.Name}}
+  serviceName: {{.Release.Name}}
+  replicas: {{.Values.StatefulSet.Replicas}}
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: {{.Release.Name}}
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: {{.Release.Name}}
+          image: {{.Values.Image.Name}}:{{.Values.Image.Tag}}
+          imagePullPolicy: {{.Values.Image.PullPolicy}}
+          ports:
+            - containerPort: {{.Values.Networking.Port}}
+          startupProbe:
+            httpGet:
+              path: /startupz
+              port: {{.Values.Networking.Port}}
+              scheme: {{.Values.Probes.Scheme}}
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: {{.Values.Networking.Port}}
+              scheme: {{.Values.Probes.Scheme}}
+            periodSeconds: 30
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{.Values.Networking.Port}}
+              scheme: {{.Values.Probes.Scheme}}
+            periodSeconds: 30
+            timeoutSeconds: 5
+          envFrom:
+            - configMapRef:
+                name: service-aspnet
+            - configMapRef:
+                name: service-config-client
+            - configMapRef:
+                name: service-backplane
+            - configMapRef:
+                name: service-tracing
+            - configMapRef:
+                name: service-logging
+          volumeMounts:
+            - name: config
+              mountPath: {{.Values.Entrypoint.MountPath}}
+              subPath: {{.Values.Entrypoint.ConfigName}}
+              readOnly: true
+          command:
+            - {{.Values.Entrypoint.MountPath}}
+      volumes:
+        - name: config
+          configMap:
+            name: {{.Release.Name}}
+            defaultMode: 0700

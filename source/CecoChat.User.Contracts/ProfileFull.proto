@@ -1,0 +1,14 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.User.Contracts";
+package CecoChat.User.Contracts;
+import "google/protobuf/timestamp.proto";
+
+message ProfileFull {
+  int64 user_id = 1;
+  google.protobuf.Timestamp version = 2;
+  string user_name = 3;
+  string display_name = 4;
+  string avatar_url = 5;
+  string phone = 6;
+  string email = 7;
+}

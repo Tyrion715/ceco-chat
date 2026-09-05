@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Release.Name}}
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: {{.Release.Name}}
+spec:
+  selector:
+    matchLabels:
+      app: {{.Release.Name}}
+  replicas: {{.Values.Deployment.Replicas}}
+  template:
+    metadata:
+      labels:
+        app: {{.Release.Name}}
+    spec:
+      containers:
+        - name: {{.Release.Name}}
+          image: {{.Values.Image.Name}}:{{.Values.Image.Tag}}
+          imagePullPolicy: {{.Values.Image.PullPolicy}}
+          ports:
+            - containerPort: {{.Values.Networking.Port}}
+          startupProbe:
+            httpGet:
+              path: /startupz
+              port: {{.Values.Networking.Port}}
+              scheme: {{.Values.Probes.Scheme}}
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: {{.Values.Networking.Port}}
+              scheme: {{.Values.Probes.Scheme}}
+            periodSeconds: 30
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{.Values.Networking.Port}}
+              scheme: {{.Values.Probes.Scheme}}
+            periodSeconds: 30
+            timeoutSeconds: 5
+          envFrom:
+            - configMapRef:
+                name: service-aspnet
+            - configMapRef:
+                name: service-config-client
+            - configMapRef:
+                name: service-backplane
+            - configMapRef:
+                name: service-tracing
+            - configMapRef:
+                name: service-logging
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            # User DB
+            - name: CECOCHAT_UserDb__Init__ConnectionString
+              value: Host={{.Values.Networking.UserDb.Host}}-0.{{.Values.Networking.UserDb.Service}}.$(NAMESPACE).svc.cluster.local;Port={{.Values.Networking.UserDb.Port}};Database=postgres;Username={{.Values.Networking.UserDb.Root.User}};Password={{.Values.Networking.UserDb.Root.Pass}};
+            - name: CECOCHAT_UserDb__Connect__ConnectionString
+              value: Host={{.Values.Networking.UserDb.Host}}-0.{{.Values.Networking.UserDb.Service}}.$(NAMESPACE).svc.cluster.local,{{.Values.Networking.UserDb.Host}}-1.{{.Values.Networking.UserDb.Service}}.$(NAMESPACE).svc.cluster.local;Port={{.Values.Networking.UserDb.Port}};Database=users;Username={{.Values.Networking.UserDb.Normal.User}};Password={{.Values.Networking.UserDb.Normal.Pass}};Keepalive=30;Load Balance Hosts=true;
+            # User cache
+            - name: CECOCHAT_UserCache__Enabled
+              value: "{{.Values.Networking.UserCache.Enabled}}"
+            - name: CECOCHAT_UserCache__Store__Endpoints__0
+              value: {{.Values.Networking.UserCache.Store.Endpoint0}}
+            - name: CECOCHAT_UserCache__Store__Endpoints__1
+              value: {{.Values.Networking.UserCache.Store.Endpoint1}}
+            - name: CECOCHAT_UserCache__Store__Endpoints__2
+              value: {{.Values.Networking.UserCache.Store.Endpoint2}}
+            - name: CECOCHAT_UserCache__Store__ConnectRetry
+              value: "{{.Values.Networking.UserCache.Store.ConnectRetry}}"
+            - name: CECOCHAT_UserCache__Store__ConnectTimeout
+              value: "{{.Values.Networking.UserCache.Store.ConnectTimeout}}"
+            - name: CECOCHAT_UserCache__Store__KeepAlive
+              value: "{{.Values.Networking.UserCache.Store.KeepAlive}}"

@@ -1,0 +1,12 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.Backplane.Contracts";
+package CecoChat.Backplane.Contracts;
+
+enum MessageType {
+  DISCONNECT = 0;
+  DELIVERY = 1;
+  PLAIN_TEXT = 2;
+  FILE = 3;
+  REACTION = 4;
+  CONNECTION = 5;
+}

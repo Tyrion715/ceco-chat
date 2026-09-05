@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\user-dev.sql" />
+    <EmbeddedResource Include="Scripts\database-users.sql" />
+    <EmbeddedResource Include="Scripts\table-01-profiles.sql" />
+    <EmbeddedResource Include="Scripts\table-02-connections.sql" />
+    <EmbeddedResource Include="Scripts\table-03-files.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CecoChat.User.Contracts\CecoChat.User.Contracts.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Common.Npgsql\Common.Npgsql.csproj" />
+    <ProjectReference Include="..\Common.Redis\Common.Redis.csproj" />
+  </ItemGroup>
+
+</Project>

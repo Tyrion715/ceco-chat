@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\certificates\services.pfx" Link="services.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CecoChat.Backplane\CecoChat.Backplane.csproj" />
+    <ProjectReference Include="..\CecoChat.Data\CecoChat.Data.csproj" />
+    <ProjectReference Include="..\CecoChat.IdGen.Client\CecoChat.IdGen.Client.csproj" />
+    <ProjectReference Include="..\CecoChat.Messaging.Contracts\CecoChat.Messaging.Contracts.csproj" />
+    <ProjectReference Include="..\CecoChat.Server\CecoChat.Server.csproj" />
+  </ItemGroup>
+
+</Project>

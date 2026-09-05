@@ -1,0 +1,10 @@
+syntax = "proto3";
+option csharp_namespace = "CecoChat.Chats.Contracts";
+package CecoChat.Chats.Contracts;
+
+message PlainTextMessage {
+  int64 message_id = 1;
+  int64 sender_id = 2;
+  int64 receiver_id = 3;
+  string text = 4;
+}

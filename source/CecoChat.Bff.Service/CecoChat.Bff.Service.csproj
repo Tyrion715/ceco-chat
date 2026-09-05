@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\certificates\services.pfx" Link="services.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CecoChat.Backplane\CecoChat.Backplane.csproj" />
+    <ProjectReference Include="..\CecoChat.Bff.Contracts\CecoChat.Bff.Contracts.csproj" />
+    <ProjectReference Include="..\CecoChat.Chats.Client\CecoChat.Chats.Client.csproj" />
+    <ProjectReference Include="..\CecoChat.Data\CecoChat.Data.csproj" />
+    <ProjectReference Include="..\CecoChat.Server\CecoChat.Server.csproj" />
+    <ProjectReference Include="..\CecoChat.User.Client\CecoChat.User.Client.csproj" />
+    <ProjectReference Include="..\Common.Minio\Common.Minio.csproj" />
+  </ItemGroup>
+
+</Project>

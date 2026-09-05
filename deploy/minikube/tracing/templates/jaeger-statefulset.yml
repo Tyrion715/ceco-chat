@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{.Release.Name}}-jaeger
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: {{.Release.Name}}-jaeger
+spec:
+  selector:
+    matchLabels:
+      app: {{.Release.Name}}-jaeger
+  serviceName: {{.Release.Name}}-jaeger
+  replicas: {{.Values.StatefulSet.Replicas}}
+  template:
+    metadata:
+      labels:
+        app: {{.Release.Name}}-jaeger
+    spec:
+      containers:
+        - name: {{.Release.Name}}-jaeger
+          image: {{.Values.Image.Name}}:{{.Values.Image.Tag}}
+          imagePullPolicy: {{.Values.Image.PullPolicy}}
+          ports:
+            - containerPort: {{.Values.Networking.Jaeger.OtlpOverGrpcPort}}
+            - containerPort: {{.Values.Networking.Jaeger.ConfigsPort}}
+            - containerPort: {{.Values.Networking.Jaeger.AccessPort}}
