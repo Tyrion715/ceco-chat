@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CecoChat — a horizontally scalable real-time chat engine</title>
+<meta name="description" content="A real-time chat engine designed for millions of users: .NET 8 microservices, WebSocket messaging fanned out over a Kafka backplane, chat history in Cassandra, users in YugabyteDB, files in MinIO, observability with OpenTelemetry.">
+<meta property="og:title" content="CecoChat — a horizontally scalable real-time chat engine">
+<meta property="og:description" content="Messaging instances share traffic through a Kafka PUB/SUB backplane, so users on different nodes can chat. Cassandra keeps history, YugabyteDB keeps users, Snowflake IDs order messages.">
+<meta property="og:image" content="https://evangelosvlachos96-dotcom.github.io/ceco-chat/images/cecochat-overall.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --board:#e9edf1; --paper:#fff; --ink:#1b2733; --muted:#5d6c7b; --rule:#cfd6dd;
+    --accent:#6b4fbb;
+  }
+  * { box-sizing:border-box }
+  body { margin:0; font-family:"Public Sans","Segoe UI",system-ui,sans-serif; color:var(--ink); background:var(--board); line-height:1.5 }
+  a { color:var(--accent) }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 1.5rem }
+  header { background:var(--paper); border-top:4px solid var(--accent); border-bottom:1px solid var(--rule) }
+  header .wrap { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem }
+  header b { font-size:1.05rem }
+  nav a { margin-left:1.25rem; color:var(--muted); text-decoration:none; font-size:.95rem }
+  nav a:hover { color:var(--ink) }
+  .hero { padding:3.5rem 0 2.5rem }
+  .hero h1 { font-size:clamp(2rem,4.5vw,3rem); line-height:1.1; margin:0 0 1rem; letter-spacing:-.01em; max-width:16ch }
+  .hero p { font-size:1.15rem; color:var(--muted); max-width:52ch; margin:0 0 1.75rem }
+  .cta { display:inline-flex; gap:.75rem; flex-wrap:wrap }
+  .btn { display:inline-block; padding:.7rem 1.25rem; border-radius:6px; text-decoration:none; font-weight:500; border:1px solid var(--rule); background:var(--paper); color:var(--ink) }
+  .btn--primary { background:var(--accent); color:#fff; border-color:var(--accent) }
+  .btn:hover { border-color:var(--accent) }
+  .shot { background:var(--paper); border:1px solid var(--rule); border-radius:10px; overflow:hidden; box-shadow:0 12px 40px rgba(27,39,51,.12) }
+  .shot img { display:block; width:100% }
+  .shot--pad img { padding:1rem }
+  section { padding:3rem 0 }
+  section h2 { font-size:1.6rem; margin:0 0 .5rem }
+  section > .wrap > p.lead { color:var(--muted); max-width:60ch; margin:0 0 2rem }
+  .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.25rem }
+  .step { background:var(--paper); border:1px solid var(--rule); border-radius:8px; padding:1.25rem }
+  .step b { display:block; font-size:1.05rem; margin-bottom:.35rem }
+  .step p { margin:0; color:var(--muted) }
+  .step code, .feature code, .rules code, .lead code { background:var(--board); padding:.1em .35em; border-radius:3px; font-size:.9em }
+  .feature { display:grid; grid-template-columns:1fr 1.4fr; gap:2rem; align-items:center; margin-bottom:3rem }
+  .feature:nth-child(even) { grid-template-columns:1.4fr 1fr }
+  .feature:nth-child(even) .text { order:2 }
+  .feature h3 { margin:0 0 .5rem; font-size:1.25rem }
+  .feature p { margin:0; color:var(--muted) }
+  .legend { list-style:none; padding:0; margin:1rem 0 0; display:grid; gap:.4rem }
+  .legend li { padding-left:1rem; border-left:5px solid var(--accent) }
+  .rules { background:var(--paper); border:1px solid var(--rule); border-radius:8px; padding:1.5rem 1.75rem }
+  .rules ol { margin:.5rem 0 0; padding-left:1.25rem }
+  .rules li { margin:.35rem 0 }
+  .rules .note { margin-top:1rem; padding-top:1rem; border-top:1px solid var(--rule); color:var(--muted) }
+  .tablewrap { overflow-x:auto }
+  table { width:100%; border-collapse:collapse; background:var(--paper); border:1px solid var(--rule); font-size:.95rem }
+  th, td { text-align:left; padding:.6rem .9rem; border-bottom:1px solid var(--rule); vertical-align:top }
+  th { background:var(--board); font-weight:600; white-space:nowrap }
+  tr:last-child td { border-bottom:0 }
+  pre { background:var(--ink); color:#dfe7ee; padding:1rem 1.25rem; border-radius:8px; overflow:auto; font-size:.9rem }
+  footer { border-top:1px solid var(--rule); padding:2rem 0; color:var(--muted); font-size:.9rem }
+  @media (max-width:760px) { .feature, .feature:nth-child(even) { grid-template-columns:1fr } .feature:nth-child(even) .text { order:0 } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <b>CecoChat</b>
+    <nav>
+      <a href="#start">Start</a>
+      <a href="#how">How it works</a>
+      <a href="#services">Services</a>
+      <a href="https://github.com/evangelosvlachos96-dotcom/ceco-chat">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>A chat engine that grows by adding machines, not by rewriting.</h1>
+    <p>Real-time messaging for millions of users, built as .NET 8 microservices. Clients hold a WebSocket to a Messaging node; the nodes exchange traffic over a Kafka backplane, so two people on different nodes still chat. History lands in Cassandra, users in YugabyteDB, files in MinIO. Everything is cloud-agnostic.</p>
+    <div class="cta">
+      <a class="btn btn--primary" href="https://github.com/evangelosvlachos96-dotcom/ceco-chat">View on GitHub</a>
+      <a class="btn" href="https://github.com/evangelosvlachos96-dotcom/ceco-chat#readme">Read the README</a>
+    </div>
+  </div>
+  <div class="wrap" style="margin-top:2.5rem">
+    <div class="shot shot--pad"><img src="images/cecochat-overall.png" alt="Overall design: clients call a Backend For Frontend over HTTP for registration, profiles, connections and chat history, and hold a WebSocket to Messaging for sending and receiving. BFF fans out to the Chats service (Chats DB) and User service (User DB, User cache, File storage). Messaging publishes to a PUB/SUB backplane and asks ID Gen for message IDs; Chats consumes the backplane. Config reads and updates a Config DB."></div>
+  </div>
+</div>
+
+<section id="start">
+  <div class="wrap">
+    <h2>Start in four steps</h2>
+    <p class="lead">You need the .NET 8 SDK, Docker with Compose and a machine with plenty of RAM. The local stack runs Kafka, YugabyteDB, Cassandra, Redis, MinIO and the observability tools.</p>
+    <div class="steps">
+      <div class="step"><b>1 · Make a dev certificate</b><p>Services and ingress use TLS. In <code>source/certificates</code> run <code>./create-certificate.sh</code> then <code>./trust-certificate.sh</code>.</p></div>
+      <div class="step"><b>2 · Create volumes, start infrastructure</b><p>Run <code>docker-volume.sh</code> in each component folder under <code>deploy/docker</code>, then <code>./start-main.sh</code> and <code>./start-telemetry.sh</code>.</p></div>
+      <div class="step"><b>3 · Run the services</b><p>Config first, since every service reads dynamic configuration from it. Then IdGen, Messaging, Chats, User and BFF with <code>dotnet run</code> from their folders under <code>source/</code>.</p></div>
+      <div class="step"><b>4 · Chat</b><p>Start the console client in <code>source/CecoChat.ConsoleClient</code>. Messaging has two launch profiles so two instances can run side by side and simulate users on different nodes.</p></div>
+    </div>
+    <p class="lead" style="margin:2rem 0 .75rem">Or start only what you are working on:</p>
+    <pre>cd deploy/docker
+docker compose -f kafka.yml up -d
+docker compose -f yugabyte.yml up -d
+docker compose -f cecochat-config.yml up -d
+
+cd source &amp;&amp; dotnet test CecoChat.sln      # integration tests start their stores with Testcontainers</pre>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="lead">Live traffic and everything else take different roads.</p>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Sending goes to the recipient's partition</h3>
+        <p>A client sends a message or reaction over WebSocket with MessagePack. The Messaging node asks ID Gen for a Snowflake ID, then publishes to the Kafka partition that belongs to the recipient. Which node the sender is on does not matter.</p>
+      </div>
+      <div class="shot shot--pad"><img src="images/cecochat-message-send.png" alt="Two clients on Messaging 0 and Messaging 1 send messages; each node publishes to the recipient's partition on the PUB/SUB backplane and gets message IDs from ID Gen"></div>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Receiving listens only to assigned partitions</h3>
+        <p>Each Messaging node subscribes to a set of partitions, and only clients whose user IDs map to those partitions connect to it. Users and their traffic are spread across nodes by user ID, so adding a node adds capacity.</p>
+      </div>
+      <div class="shot shot--pad"><img src="images/cecochat-message-receive.png" alt="Messaging 0 and Messaging 1 each subscribe to their assigned partitions on the backplane and deliver notifications to the clients connected to them"></div>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Everything else goes through the BFF</h3>
+        <p>Register, authenticate, edit a profile, search users by name, invite and accept connections, fetch chat history, upload a file: all HTTP/JSON to the Backend For Frontend, which calls the Chats and User services over gRPC. The Chats service builds chat state and history in Cassandra by consuming the same backplane.</p>
+      </div>
+      <div class="text">
+        <h3>Configuration that changes at runtime</h3>
+        <p>The Config service keeps dynamic settings in YugabyteDB and pushes changes to interested services over the backplane. The deployment design has a configurator read metrics and grow or shrink the Messaging partition count and instance count from them.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="text">
+        <h3>Scaling is designed in</h3>
+        <p>BFF, User, Chats and ID Gen sit behind a load balancer and scale by instance count. Messaging scales by partitions. Research notes in <code>docs/</code> cover the concurrent connection limit, expected traffic, message ID design and reliable messaging versus consistency.</p>
+      </div>
+      <div class="shot shot--pad"><img src="images/cecochat-deployment.png" alt="Deployment diagram: BFF, User, Chats and ID Gen scale by load-balanced instances; Config gathers metrics from observability infrastructure, updates partitioning config and manages Messaging instances through the deployment infrastructure"></div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <h2>The services</h2>
+    <p class="lead">What each one owns and how it talks.</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Service</th><th>Role</th><th>Protocols</th><th>Storage</th></tr></thead>
+      <tbody>
+        <tr><td><b>BFF</b></td><td>Public HTTP API for clients, aggregates the other services</td><td>HTTP/JSON, gRPC</td><td>—</td></tr>
+        <tr><td><b>Messaging</b></td><td>Real-time chat sessions, fan-out through the backplane</td><td>WebSocket/MessagePack, Kafka</td><td>—</td></tr>
+        <tr><td><b>Chats</b></td><td>Chat state and history projections</td><td>gRPC, Kafka</td><td>Cassandra</td></tr>
+        <tr><td><b>User</b></td><td>Profiles, authentication, connections, file metadata</td><td>gRPC, Kafka</td><td>YugabyteDB, Redis, MinIO</td></tr>
+        <tr><td><b>ID Gen</b></td><td>Snowflake ID generation</td><td>gRPC</td><td>—</td></tr>
+        <tr><td><b>Config</b></td><td>Dynamic configuration with change notifications</td><td>gRPC, Kafka</td><td>YugabyteDB</td></tr>
+        <tr><td><b>Console client</b></td><td>Minimal functional client for manual testing</td><td>HTTP, WebSocket</td><td>—</td></tr>
+        <tr><td><b>Load tester</b></td><td>Simulates many concurrent users</td><td>WebSocket</td><td>—</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="rules" style="margin-top:2rem">
+      <b>What a user can do</b>
+      <ol>
+        <li><b>Messaging</b>: send and receive messages, send files (images, text, PDF), react and unreact with emojis, several clients per user</li>
+        <li><b>Chats</b>: processing notifications, new-message indication, history at any point in time</li>
+        <li><b>Users</b>: register, authenticate, change password, edit profile, store small files</li>
+        <li><b>Other users</b>: search by name, connections (invite, accept, cancel, remove), public profiles</li>
+      </ol>
+      <p class="note">Operations: health checks, distributed tracing, logs and metrics via OpenTelemetry to Jaeger, Prometheus, Grafana, ElasticSearch and Kibana. Deploys with Docker Compose or to Minikube from <code>deploy/</code>. GitHub Actions build the solution, enforce code style with <code>dotnet format</code>, run SonarCloud and push images to Docker Hub.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    .NET 8 · ASP.NET Core · SignalR · gRPC · Kafka · MessagePack · YugabyteDB · Cassandra · Redis · MinIO · OpenTelemetry · Docker · Kubernetes &nbsp;·&nbsp;
+    <a href="https://github.com/evangelosvlachos96-dotcom/ceco-chat">Source on GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>
